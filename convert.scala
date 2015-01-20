@@ -20,6 +20,8 @@ def powersOf2UpToN(n: Int) = powersOfX(2) takeWhile (_ <= n)
 
 def nthPowersOf2(n: Int) = powersOfX(2) take n
 
+def trimLeadingZeroes(s: String) = (s.toList dropWhile (_ == '0')).mkString
+
 def decimalToBinary(decimal: String) = {
   def calculate(num: Int, powers: Stream[Int], accum: String): String = {
     if      (powers.isEmpty)     accum
@@ -57,12 +59,24 @@ def hexToDecimal(hex: String) = {
 
 def binaryToHex(binary: String) = {
   val splitBin = binary.split("").filter(_ != "")
-  
+
 }
 
 def hexToBinary(hex: String) = {
-  val splitHex = hex.split("").filter(+ != "")
+  def calculate(num: List[String], accum: String): String = {
+    if (num.length <= 0) accum
+    else {
+      val currBin = hexToBinValues.get(num.head) match {
+        case Some(s) => s
+        case None    => "0000"
+      }
+      calculate(num.tail, accum + currBin)
+    }
+  }
 
+  val splitHex = hex.split("").filter(_ != "").toList
+  val answer   = calculate(splitHex, "")
+  println(hex + " in binary: " + trimLeadingZeroes(answer))
 }
 
 val value = args(1)
