@@ -22,12 +22,13 @@ val hexToDecValues = Map(
   "C" -> 12, "D" -> 13, "E" -> 14, "F" -> 15
 )
 
-def powersOfX(x: Int) = {
-  def loop(n: Int): Stream[Int] = n #:: loop(x * n)
-  loop(1)
-}
+val revHexToDec = hexToDecValues map (_.swap)
+
+def powersOfX(x: Int, start: Int = 1): Stream[Int] = Stream.cons(start, powersOfX(x, start * x))
 
 def powersOf2UpToN(n: Int) = powersOfX(2) takeWhile (_ <= n)
+
+def powersOf16UpToN(n: Int) = powersOfX(16) takeWhile (_ <= n)
 
 def nthPowersOf2(n: Int) = powersOfX(2) take n
 
@@ -37,15 +38,9 @@ def trimLeadingZeroes(s: String) = (s.toList dropWhile (_ == '0')).mkString
 
 def superSplit(s: String) = s.split("").filter(_ != "").toList
 
-def extractStr(x: Option[String]) = x match {
-  case Some(str) => str
-  case _         => "0000"
-}
+def extractStr(x: Option[String]) = x match { case Some(str) => str; case _ => "0" }
 
-def extractInt(x: Option[Int]) = x match {
-  case Some(i) => i
-  case _       => 1
-}
+def extractInt(x: Option[Int]) = x match { case Some(i) => i; case _ => 1 }
 
 /*
  * The actual functions.
@@ -78,14 +73,24 @@ def binaryToDecimal(binary: String) = {
 }
 
 def decimalToHex(decimal: String) = {
-
+  def calculate(num: Int, powers: Stream[Int], accum: String): String = {
+    if (powers.isEmpty) accum
+    else if (powers.head <= num) {
+      val dividesBy = num / powers.head
+      val hexSymbol = extractStr(revHexToDec.get(dividesBy))
+      calculate(num - (powers.head * dividesBy), powers.tail, accum + hexSymbol)
+    } else calculate(num, powers.tail, accum + "0")
+  }
+  val pwrs   = powersOf16UpToN(decimal.toInt).reverse
+  val answer = calculate(decimal.toInt, pwrs, "")
+  println(decimal + " in hecidecimal: " + answer)
 }
 
 def hexToDecimal(hex: String) = {
-  val pwrs = nthPowersOf16(hex.length).reverse
-  val zippedList    = (pwrs, superSplit(hex)).zipped.toList
-  val extractedList = zippedList map (x => (x._1, extractInt(hexToDecValues.get(x._2))))
-  val answer        = (extractedList map (x => x._1 * x._2)).sum
+  val pwrs       = nthPowersOf16(hex.length).reverse
+  val zippedList = (pwrs, superSplit(hex)).zipped.toList
+  val extrList   = zippedList map (x => (x._1, extractInt(hexToDecValues.get(x._2))))
+  val answer     = (extrList map (x => x._1 * x._2)).sum
   println(hex + " in decimal: " + answer)
 }
 
