@@ -14,3 +14,7 @@ scala convert.scala [X][Y] [NUMBER]
 ```
 where X is the letter of the format you wish to start in, Y is the format you wish to convert to, and NUMBER is the number you're starting with (in its proper format).
 - Hex letters must be capitalized. No spaces or commas. Binary does not need leading zeroes. No values that exceed Max-Int. Positive numbers only. The program does not handle 2s-complement conversions.
+- If you are using this script while connected to Marist WiFi (or any other proxy-based connection), use the following command to run the script:
+```
+scala -nocompdaemon convert.scala [X][Y] [NUMBER]
+```
