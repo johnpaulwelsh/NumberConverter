@@ -15,6 +15,8 @@ val hexToBinValues = Map(
   "C" -> "1100", "D" -> "1101", "E" -> "1110", "F" -> "1111"
 )
 
+val revHexToBin = hexToBinValues map (_.swap)
+
 val hexToDecValues = Map(
   "0" -> 0,  "1" -> 1,  "2" -> 2,  "3" -> 3,
   "4" -> 4,  "5" -> 5,  "6" -> 6,  "7" -> 7,
@@ -95,10 +97,27 @@ def hexToDecimal(hex: String) = {
 }
 
 def binaryToHex(binary: String) = {
+  def splitBy4(str: List[String], accum: List[String]): List[String] = {
+    if (str.isEmpty) accum
+    else splitBy4(str drop 4, (str take 4).mkString :: accum)
+  }
 
+  def calculate(groupings: List[String], accum: String): String = {
+    if (groupings.isEmpty) accum
+    else calculate(groupings.tail, accum + extractStr(revHexToBin.get(groupings.head)))
+  }
 
-  val splitBin = superSplit(binary)
-  // val answer = calculate(splitBin, 0)
+  val paddedBinary = binary.reverse + ((binary.length % 4) match {
+    case 0 => ""
+    case 1 => "0"
+    case 2 => "00"
+    case 3 => "000"
+    case _ => ""
+  })
+
+  val groupedBinary = splitBy4(superSplit(paddedBinary), List()) map (_.reverse)
+  val answer = calculate(groupedBinary, "")
+  println(binary + " in hexadecimal: " + answer)
 }
 
 def hexToBinary(hex: String) = {
