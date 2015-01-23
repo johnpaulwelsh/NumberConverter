@@ -48,7 +48,7 @@ def extractInt(x: Option[Int]) = x match { case Some(i) => i; case _ => 1 }
  * The actual functions.
  */
 
-def decimalToBinary(decimal: String) = {
+def decimalToBinary(decimal: String, is2sComp: Boolean) = {
   def calculate(num: Int, powers: Stream[Int], accum: String): String = {
     if      (powers.isEmpty)     accum
     else if (powers.head <= num) calculate(num - powers.head, powers.tail, accum + "1")
@@ -60,7 +60,7 @@ def decimalToBinary(decimal: String) = {
   println(decimal + " in binary: " + answer)
 }
 
-def binaryToDecimal(binary: String) = {
+def binaryToDecimal(binary: String, is2sComp: Boolean) = {
   def calculate(num: String, powers: Stream[Int], accum: Int): String = {
     if (powers.isEmpty) accum.toString
     else calculate(num.substring(1),
@@ -135,10 +135,13 @@ def hexToBinary(hex: String) = {
  * The entry point.
  */
 
-val value = args(1)
-args(0) match {
-  case "db" => decimalToBinary(value)
-  case "bd" => binaryToDecimal(value)
+val convType = args(0)
+val is2sComp = args(1) == "2s"
+val value    = args(2)
+
+convType match {
+  case "db" => decimalToBinary(value, is2sComp)
+  case "bd" => binaryToDecimal(value, is2sComp)
   case "dh" => decimalToHex(value)
   case "hd" => hexToDecimal(value)
   case "bh" => binaryToHex(value)
