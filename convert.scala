@@ -8,6 +8,8 @@
   * Helper functions and values.
   */
 
+val EMPTY = List[String]()
+
 val hexToBinValues = Map(
   "0" -> "0000", "1" -> "0001", "2" -> "0010", "3" -> "0011",
   "4" -> "0100", "5" -> "0101", "6" -> "0110", "7" -> "0111",
@@ -28,12 +30,10 @@ val revHexToDec = hexToDecValues map (_.swap)
 
 def powersOfX(x: Int, start: Int = 1): Stream[Int] = Stream.cons(start, powersOfX(x, start * x))
 
-def powersOf2UpToN(n: Int) = powersOfX(2) takeWhile (_ <= n)
-
+def powersOf2UpToN(n: Int)  = powersOfX(2) takeWhile (_ <= n)
 def powersOf16UpToN(n: Int) = powersOfX(16) takeWhile (_ <= n)
 
-def nthPowersOf2(n: Int) = powersOfX(2) take n
-
+def nthPowersOf2(n: Int)  = powersOfX(2) take n
 def nthPowersOf16(n: Int) = powersOfX(16) take n
 
 def trimLeadingZeroes(s: String) = (s.toList dropWhile (_ == '0')).mkString
@@ -41,8 +41,33 @@ def trimLeadingZeroes(s: String) = (s.toList dropWhile (_ == '0')).mkString
 def superSplit(s: String) = s.split("").filter(_ != "").toList
 
 def extractStr(x: Option[String]) = x match { case Some(str) => str; case _ => "0" }
+def extractInt(x: Option[Int])    = x match { case Some(i) => i; case _ => 1 }
 
-def extractInt(x: Option[Int]) = x match { case Some(i) => i; case _ => 1 }
+def flipBinary(binary: String) = {
+  def loop(bin: List[String], accum: List[String]): List[String] = {
+    if (bin.isEmpty) accum.reverse
+    else bin.head match {
+      case "0" => loop(bin.tail, "1" :: accum)
+      case "1" => loop(bin.tail, "0" :: accum)
+      case _   => loop(bin.tail, accum)
+    }
+  }
+
+  loop(superSplit(binary), EMPTY).mkString
+}
+
+def addOneBinary(binary: String) = {
+  def loop(orig: List[String], accum: List[String], carry: Boolean, isDone: Boolean): List[String] = {
+    // if (orig.isEmpty && isDone) accum.reverse
+    // else if (isDone) loop(orig.tail, orig.head :: accum, false, true)
+    // else if (orig.head == "0" && !carry) loop(orig.tail, "0" :: accum, false, true)
+    // else if (orig.head == "0" && carry) loop(orig.tail, "1" :: accum, false, false)
+    // else if (orig.head == "1" && !carry) loop(orig.tail, "0" :: accum, true)
+    // else if (orig.head == "1" && carry) loop(orig.tail, "0" :: accum, true)
+  }
+
+  loop(superSplit(binary).reverse, EMPTY, false, true).mkString
+}
 
 /*
  * The actual functions.
@@ -55,8 +80,13 @@ def decimalToBinary(decimal: String, is2sComp: Boolean) = {
     else                         calculate(num, powers.tail, accum + "0")
   }
 
-  val pwrs   = powersOf2UpToN(decimal.toInt).reverse
-  val answer = calculate(decimal.toInt, pwrs, "")
+  val posDec = decimal.toInt.abs
+  val pwrs   = powersOf2UpToN(posDec).reverse
+  val answer = calculate(posDec, pwrs, "")
+  // change answer to be 2s-complement if needed
+  if (decimal.toInt < 0) {
+    println("dingo")
+  }
   println(decimal + " in binary: " + answer)
 }
 
@@ -70,6 +100,7 @@ def binaryToDecimal(binary: String, is2sComp: Boolean) = {
   }
 
   val pwrs   = nthPowersOf2(binary.length).reverse
+  // if necessary, take off first digit and perform 2s-complement flips
   val answer = calculate(binary, pwrs, 0)
   println(binary + " in decimal: " + answer)
 }
