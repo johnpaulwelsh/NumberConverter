@@ -43,30 +43,23 @@ def superSplit(s: String) = s.split("").filter(_ != "").toList
 def extractStr(x: Option[String]) = x match { case Some(str) => str; case _ => "0" }
 def extractInt(x: Option[Int])    = x match { case Some(i) => i; case _ => 1 }
 
-def flipBinary(binary: String) = {
-  def loop(bin: List[String], accum: List[String]): List[String] = {
-    if (bin.isEmpty) accum.reverse
-    else bin.head match {
-      case "0" => loop(bin.tail, "1" :: accum)
-      case "1" => loop(bin.tail, "0" :: accum)
-      case _   => loop(bin.tail, accum)
-    }
-  }
-
-  loop(superSplit(binary), EMPTY).mkString
-}
+def flipBinary(binary: String) = (superSplit(binary) map (x => if (x == "0") "1" else "0")).mkString
 
 def addOneBinary(binary: String) = {
   def loop(orig: List[String], accum: List[String], carry: Boolean, isDone: Boolean): List[String] = {
-    // if (orig.isEmpty && isDone) accum.reverse
-    // else if (isDone) loop(orig.tail, orig.head :: accum, false, true)
-    // else if (orig.head == "0" && !carry) loop(orig.tail, "0" :: accum, false, true)
-    // else if (orig.head == "0" && carry) loop(orig.tail, "1" :: accum, false, false)
-    // else if (orig.head == "1" && !carry) loop(orig.tail, "0" :: accum, true)
-    // else if (orig.head == "1" && carry) loop(orig.tail, "0" :: accum, true)
+    // give it back (with an extra 1 if we needed a new digit place)
+    if (orig.isEmpty) if (carry) "1" :: accum else accum
+    // just keep tacking on the head forever
+    else if (isDone || !carry) loop(orig.tail, orig.head :: accum, false, true)
+    // next is 0 and we have a pending carry (add a 1 and remove the carry)
+    else if (orig.head == "0" && carry) loop(orig.tail, "1" :: accum, false, false)
+    // next is 1 and we have a pending carry (add a 0 and keep the carry)
+    else if (orig.head == "1" && carry) loop(orig.tail, "0" :: accum, true, false)
+    // this should never happen
+    else loop(orig.tail, accum, false, false)
   }
 
-  loop(superSplit(binary).reverse, EMPTY, false, true).mkString
+  loop(superSplit(binary).reverse, EMPTY, carry = true, isDone = false).mkString
 }
 
 /*
@@ -84,9 +77,11 @@ def decimalToBinary(decimal: String, is2sComp: Boolean) = {
   val pwrs   = powersOf2UpToN(posDec).reverse
   val answer = calculate(posDec, pwrs, "")
   // change answer to be 2s-complement if needed
-  if (decimal.toInt < 0) {
-    println("dingo")
-  }
+  // if (decimal.toInt < 0) {
+  //   val flipped = flipBinary(answer)
+  //   val added = addOneBinary(flipped)
+  //   println(added)
+  // }
   println(decimal + " in binary: " + answer)
 }
 
